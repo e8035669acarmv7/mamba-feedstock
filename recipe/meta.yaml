@@ -10,6 +10,9 @@ package:
 source:
   url: https://github.com/mamba-org/mamba/archive/refs/tags/{{ release }}.tar.gz
   sha256: bc1ec3de0dd8398fcc6f524e6607d9d8f6dfeeedb2208ebe0f2070c8fd8fdd83
+  patches:
+    - patches/0001-fix-latomic-not-added-on-armv7l-gcc.patch
+    - patches/0002-fix-unknown-arm-platform.patch
 build:
   number: 0
 
