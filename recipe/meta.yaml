@@ -13,6 +13,7 @@ source:
   patches:
     - patches/0001-fix-latomic-not-added-on-armv7l-gcc.patch
     - patches/0002-fix-unknown-arm-platform.patch
+    - patches/0003-add-link-atomic.patch
 build:
   number: 0
 
