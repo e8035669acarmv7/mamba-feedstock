@@ -1,7 +1,7 @@
 From 493699f45e3ef12fb561b54c3033c5ef83663177 Mon Sep 17 00:00:00 2001
 From: Yu-Ren Zhang <e8035669@gmail.com>
 Date: Sat, 6 May 2023 19:32:05 +0800
-Subject: [PATCH 3/3] add link atomic
+Subject: [PATCH 3/5] add link atomic
 
 ---
  libmamba/CMakeLists.txt | 2 ++
