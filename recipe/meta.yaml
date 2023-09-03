@@ -1,15 +1,15 @@
 {% set name = "mamba" %}
-{% set libmamba_version = "1.4.3" %}
-{% set libmambapy_version = "1.4.3" %}
-{% set mamba_version = "1.4.3" %}
-{% set release = "2023.05.15" %}
+{% set libmamba_version = "1.5.0" %}
+{% set libmambapy_version = "1.5.0" %}
+{% set mamba_version = "1.5.0" %}
+{% set release = "2023.08.24" %}
 
 package:
   name: mamba-split
 
 source:
   url: https://github.com/mamba-org/mamba/archive/refs/tags/{{ release }}.tar.gz
-  sha256: a8df186e55c3a9fbd92fb7c6e04b86208ab4614ae4a2f6f743cdef26c16c61d3
+  sha256: 955c02838468b7fcd090444458b0f1b6fdb0ddb9a1e46d2440c3c476c015e8a1
   patches:
     - patches/0001-fix-latomic-not-added-on-armv7l-gcc.patch
     - patches/0002-fix-unknown-arm-platform.patch
@@ -129,7 +129,7 @@ outputs:
         - {{ pin_subpackage('libmambapy', exact=True) }}
       run:
         - python
-        - conda >=4.14,<23.4
+        - conda >=4.14,<24.0a0
         - {{ pin_subpackage('libmambapy', exact=True) }}
 
     test:
