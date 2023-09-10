@@ -12,10 +12,8 @@ source:
   sha256: 955c02838468b7fcd090444458b0f1b6fdb0ddb9a1e46d2440c3c476c015e8a1
   patches:
     - patches/0001-fix-latomic-not-added-on-armv7l-gcc.patch
-    - patches/0002-fix-unknown-arm-platform.patch
-    - patches/0003-add-link-atomic.patch
-    - patches/0004-fix-get_info-bug-on-32-bit-devices.patch
-    - patches/0005-revert-fetch.cpp-and-change-only-curl.cpp.patch
+    - patches/0002-add-link-atomic.patch
+    - patches/0003-fix-platform-detect.patch
 
 build:
   number: 0
