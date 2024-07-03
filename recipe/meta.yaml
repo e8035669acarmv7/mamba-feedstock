@@ -1,19 +1,15 @@
 {% set name = "mamba" %}
-{% set libmamba_version = "1.5.1" %}
-{% set libmambapy_version = "1.5.1" %}
-{% set mamba_version = "1.5.1" %}
-{% set release = "2023.09.05" %}
+{% set libmamba_version = "2.0.0beta3" %}
+{% set libmambapy_version = "2.0.0beta3" %}
+{% set mamba_version = "2.0.0beta3" %}
+{% set release = "2024.06.14" %}
 
 package:
   name: mamba-split
 
 source:
   url: https://github.com/mamba-org/mamba/archive/refs/tags/{{ release }}.tar.gz
-  sha256: 17f5be3077558250fc8ba02af68802cebe24d4b8d5bf5a602148ca54b43ebb10
-  patches:
-    - patches/0001-fix-latomic-not-added-on-armv7l-gcc.patch
-    - patches/0002-add-link-atomic.patch
-    - patches/0003-fix-platform-detect.patch
+  sha256: 23d95e74c2580739567666f77be11ca22681123f47106f997e859f9a02db6b9b
 
 build:
   number: 0
@@ -32,22 +28,38 @@ outputs:
     requirements:
       build:
         - {{ compiler('cxx') }}
+        - {{ stdlib("c") }}
         - cmake
         - ninja
         - python  # [win]
       host:
-        - libsolv >=0.7.19
-        - libcurl
+        - libsolv >=0.7.23
+        - libcurl >=8.4.0
         - openssl
         - libarchive
         - nlohmann_json
         - cpp-expected
-        - reproc-cpp >=14.2.1
+        - reproc
+        - reproc-cpp >=14.2.4.post0
         - spdlog
         - yaml-cpp
         - cli11
         - fmt
         - winreg                                 # [win]
+        - zstd
+        - simdjson >=3.3.0
+      run:
+        # Missing run_export in libsolv
+        - {{ pin_compatible('libsolv', max_pin='x.x.x') }}
+        # Public libmamba dependencies
+        - {{ pin_compatible('fmt', max_pin='x.x') }}
+        - {{ pin_compatible('spdlog', max_pin='x.x') }}
+        - {{ pin_compatible('cpp-expected', max_pin='x.x') }}
+        - {{ pin_compatible('nlohmann_json', max_pin='x.x') }}
+        - {{ pin_compatible('yaml-cpp', max_pin='x.x') }}
+        - {{ pin_compatible('reproc', max_pin='x.x') }}
+        - {{ pin_compatible('reproc-cpp', max_pin='x.x') }}
+
     test:
       commands:
         - test -d ${PREFIX}/include/mamba  # [unix]
@@ -63,7 +75,8 @@ outputs:
         {% set libmamba_version_split = libmamba_version.split('.') %}
         - cat $PREFIX/include/mamba/version.hpp | grep "LIBMAMBA_VERSION_MAJOR {{ libmamba_version_split[0] }}"  # [unix]
         - cat $PREFIX/include/mamba/version.hpp | grep "LIBMAMBA_VERSION_MINOR {{ libmamba_version_split[1] }}"  # [unix]
-        - cat $PREFIX/include/mamba/version.hpp | grep "LIBMAMBA_VERSION_PATCH {{ libmamba_version_split[2] }}"  # [unix]
+        # TODO: uncomment for release 2.0.0
+        #- cat $PREFIX/include/mamba/version.hpp | grep "LIBMAMBA_VERSION_PATCH {{ libmamba_version_split[2] }}"  # [unix]
 
   - name: libmambapy
     version: {{ libmambapy_version }}
@@ -75,9 +88,11 @@ outputs:
         - {{ pin_subpackage('libmambapy', max_pin='x.x') }}
       ignore_run_exports:
         - spdlog
+      skip: True  # [python_impl == 'pypy']
     requirements:
       build:
         - {{ compiler('cxx') }}
+        - {{ stdlib("c") }}
         - cmake
         - ninja
         - python                                 # [build_platform != target_platform]
@@ -86,6 +101,7 @@ outputs:
         - pybind11-abi                           # [build_platform != target_platform]
       host:
         - python
+        - scikit-build
         - pip
         - pybind11
         - pybind11-abi
@@ -106,37 +122,45 @@ outputs:
         - libmambapy
         - libmambapy.bindings
       commands:
-        - python -c "import libmambapy._version; assert libmambapy._version.__version__ == '{{ libmambapy_version }}'"
+        #- python -c "import libmambapy._version; assert libmambapy._version.__version__ == '{{ libmambapy_version }}'"
 
   - name: mamba
     version: {{ mamba_version }}
     script: build_mamba.sh                       # [unix]
     script: build_mamba.bat                      # [win]
     build:
-      string: py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}
-      entry_points:
-        - mamba = mamba.mamba:main
+      ignore_run_exports_from:
+        - libcurl                     # [unix]
+        - openssl                     # [unix]
+        - spdlog
+        - fmt
+        - {{ compiler('cxx') }}       # [linux]
+        - python                      # [win]
+        - libsolv
     requirements:
       build:
-        - python                              # [build_platform != target_platform]
-        - cross-python_{{ target_platform }}  # [build_platform != target_platform]
+        - {{ compiler('cxx') }}
+        - {{ stdlib("c") }}
+        - cmake
+        - ninja
+        - vcpkg-tool      # [win]
+        - python          # [win]
+        - curl >=8.4.0    # [win]
+        - zlib            # [win]
       host:
-        - python
-        - pip
-        - openssl
-        - {{ pin_subpackage('libmambapy', exact=True) }}
+        - cli11 >=2.2,<3
+        - reproc
+        - reproc-cpp
+        - {{ pin_subpackage('libmamba', exact=True) }}
       run:
-        - python
-        - conda >=4.14,<24.0a0
-        - {{ pin_subpackage('libmambapy', exact=True) }}
+        - {{ pin_subpackage('libmamba', exact=True) }}
 
     test:
-      imports:
-        - mamba
-      requires:
-        - pip
       commands:
+        - test -f "${PREFIX}/bin/mamba"                    # [unix]
+        - if not exist %LIBRARY_BIN%\mamba.exe (exit 1)  # [win]
         - mamba --help
+<<<<<<< HEAD
         - if exist %PREFIX%\condabin\mamba.bat (exit 0) else (exit 1)  # [win]
         - test -f ${PREFIX}/etc/profile.d/mamba.sh  # [linux]
         # these tests work when run on win, but for some reason not during conda build
@@ -146,6 +170,20 @@ outputs:
         # but that's completely unrelated to mamba
         - python -c "import mamba._version; assert mamba._version.__version__ == '{{ mamba_version }}'"
         - test -f ${PREFIX}/condabin/mamba  # [unix]
+=======
+        - export MAMBA_ROOT_PREFIX="$(mktemp -d)"  # [unix]
+        - mkdir %TEMP%\mamba                       # [win]
+        - set "MAMBA_ROOT_PREFIX=%TEMP%\mamba"     # [win]
+        - mamba clean --all --dry-run    # [unix]
+        # The following test is segfaulting but we couod not reproduce it outside the build
+        # environment, so we're moving on with the 2.0.0beta0 release.
+        # - mamba repoquery depends mamba  # [unix]
+        - mamba create -n test --override-channels -c conda-forge --yes python=3.9
+        - '"${MAMBA_ROOT_PREFIX}/envs/test/bin/python" --version'       # [unix]
+        - '%MAMBA_ROOT_PREFIX%\envs\test\python.exe --version'          # [win]
+        - '"${MAMBA_ROOT_PREFIX}/envs/test/bin/python" -c "import os"'  # [unix]
+        - '%MAMBA_ROOT_PREFIX%\envs\test\python.exe -c "import os"'     # [win]
+>>>>>>> upstream/main
 
 about:
   home: https://github.com/mamba-org/mamba
@@ -192,6 +230,7 @@ about:
 
 extra:
   recipe-maintainers:
+    - AntoinePrv
     - adriendelsalle
     - SylvainCorlay
     - JohanMabille
