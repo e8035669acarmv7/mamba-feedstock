@@ -10,6 +10,8 @@ package:
 source:
   url: https://github.com/mamba-org/mamba/archive/refs/tags/{{ release }}.tar.gz
   sha256: 23d95e74c2580739567666f77be11ca22681123f47106f997e859f9a02db6b9b
+  patches:
+    - 0003-fix-unknown-arm-platform.patch
 
 build:
   number: 0
@@ -160,17 +162,6 @@ outputs:
         - test -f "${PREFIX}/bin/mamba"                    # [unix]
         - if not exist %LIBRARY_BIN%\mamba.exe (exit 1)  # [win]
         - mamba --help
-<<<<<<< HEAD
-        - if exist %PREFIX%\condabin\mamba.bat (exit 0) else (exit 1)  # [win]
-        - test -f ${PREFIX}/etc/profile.d/mamba.sh  # [linux]
-        # these tests work when run on win, but for some reason not during conda build
-        # - mamba create -n test_py2 python=2.7 --dry-run  # [linux]
-        # - mamba install xtensor xsimd -c conda-forge --dry-run  # [linux and x86_64]
-        # for some reason tqdm doesn't have a proper colorama dependency so pip check fails
-        # but that's completely unrelated to mamba
-        - python -c "import mamba._version; assert mamba._version.__version__ == '{{ mamba_version }}'"
-        - test -f ${PREFIX}/condabin/mamba  # [unix]
-=======
         - export MAMBA_ROOT_PREFIX="$(mktemp -d)"  # [unix]
         - mkdir %TEMP%\mamba                       # [win]
         - set "MAMBA_ROOT_PREFIX=%TEMP%\mamba"     # [win]
@@ -183,7 +174,6 @@ outputs:
         - '%MAMBA_ROOT_PREFIX%\envs\test\python.exe --version'          # [win]
         - '"${MAMBA_ROOT_PREFIX}/envs/test/bin/python" -c "import os"'  # [unix]
         - '%MAMBA_ROOT_PREFIX%\envs\test\python.exe -c "import os"'     # [win]
->>>>>>> upstream/main
 
 about:
   home: https://github.com/mamba-org/mamba
