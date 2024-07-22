@@ -12,6 +12,7 @@ source:
   sha256: 12d3bb2f062a33eaba00c42c78291b45a91c0414caf317d32d4030bc486b2cbe
   patches:
     - 0003-fix-unknown-arm-platform.patch
+    - 0004-fix-incorrect-number-type.patch
 
 build:
   number: 0
