@@ -170,7 +170,8 @@ outputs:
         # The following test is segfaulting but we couod not reproduce it outside the build
         # environment, so we're moving on with the 2.0.0beta0 release.
         # - mamba repoquery depends mamba  # [unix]
-        - mamba create -n test --override-channels -c conda-forge --yes python=3.9
+        - mamba create -n test --override-channels -c conda-forge --yes python=3.9 # [not armv7l]
+        - mamba create -n test --override-channels -c conda-forge -c e8035669acarmv7 --yes python=3.9 # [armv7l]
         - '"${MAMBA_ROOT_PREFIX}/envs/test/bin/python" --version'       # [unix]
         - '%MAMBA_ROOT_PREFIX%\envs\test\python.exe --version'          # [win]
         - '"${MAMBA_ROOT_PREFIX}/envs/test/bin/python" -c "import os"'  # [unix]
